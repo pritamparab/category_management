@@ -5,6 +5,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework import status
+from django.contrib.auth.models import User
+from rest_framework.permissions import AllowAny
  
 #from django.contrib.auth.models import Group
 from core.models import Product
@@ -18,7 +21,6 @@ class ProductView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        print("User:", request.user)
         if not request.user.is_authenticated:
             return Response({"detail": "User is not authenticated"}, status=401)
     
@@ -35,12 +37,20 @@ class ProductView(APIView):
             codename.replace('access_', '').replace('_', ' ')
             for codename in accessible_categories
         ]
-        #accessible_categories = [cat.lower() for cat in accessible_categories]
-        print("accessible_categories",accessible_categories)
-        # Get products for accessible categories
-        products = Product.objects.filter(category__in=accessible_categories)
-        print("products",products)
-        serialized_products = [
+
+        db_categories = {
+            category.strip().lower(): category
+            for category in Product.objects.values_list('category', flat=True)
+        }
+
+        matched_categories = [db_categories.get(cat) for cat in accessible_categories if cat in db_categories]
+        accessible_products = Product.objects.filter(category__in=matched_categories)
+
+        #premium_products = Product.objects.filter(category="Mobile Phone")
+
+        premium_categories = ["Mobile Phone"]
+
+        serialized_accessible_products = [
             {
                 "id": product.id,
                 "title": product.title,
@@ -49,10 +59,27 @@ class ProductView(APIView):
                 "category": product.category,
                 "image_url": product.image_url,
             }
-            for product in products
+            for product in accessible_products if product.category not in premium_categories
         ]
 
-        return Response(serialized_products)
+        serialized_premium_products = [
+            {
+                "id": product.id,
+                "title": product.title,
+                "price": product.price,
+                "description": product.description,
+                "category": product.category,
+                "image_url": product.image_url,
+            }
+            for product in accessible_products if product.category in premium_categories
+        ]
+
+        response_data = {
+            "accessible_products": serialized_accessible_products,
+            "premium_products": serialized_premium_products,
+        }
+
+        return Response(response_data)
     
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
@@ -65,3 +92,19 @@ class LogoutView(APIView):
             return Response({"message": "Successfully logged out"}, status=200)
         except Exception as e:
             return Response({"error": str(e)}, status=400)
+
+class SignupView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        first_name = request.data.get('first_name')
+        last_name = request.data.get('last_name')
+        email = request.data.get('email', '')  # Email is optional
+
+        if not username or not password:
+            return Response({"detail": "Username and password are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects.create_user(username=username, password=password, first_name=first_name, last_name=last_name, email=email)
+        return Response({"detail": "User created successfully."}, status=status.HTTP_201_CREATED)

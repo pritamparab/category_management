@@ -32,7 +32,7 @@ const NavBar = ({cookies, setCookie, removeCookie}) => {
                 method: "POST",
                 headers: { 
                     "Content-Type": "application/json",
-                    'Authorization': `Bearer ${cookies.refreshToken}`,
+                    'Authorization': `Bearer ${cookies.token}`,
                  }
             });
             removeCookie("token");
@@ -56,7 +56,7 @@ const NavBar = ({cookies, setCookie, removeCookie}) => {
     return (
         <>
         <nav className='navbar-position'>
-            <Menu stackable size='massive'>
+            <Menu stackable size='massive' inverted>
                 <MenuItem header>
                 {isLoggedIn ? `Welcome, ${userName}` : 'Welcome, Guest'}
                 </MenuItem>
@@ -72,6 +72,9 @@ const NavBar = ({cookies, setCookie, removeCookie}) => {
                     {isLoggedIn ? 'Logout' : 'Login'}
                 </MenuItem>
                 </Menu.Menu>
+                <MenuItem onClick={() => navigate('/signup')}>
+                Sign Up
+                </MenuItem>
             </Menu>
         </nav>
         <Outlet context={{ cookies, setCookie, removeCookie }}/>

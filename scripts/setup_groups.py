@@ -18,17 +18,17 @@ def setup_groups():
 
     # Define groups
     groups_data = {
-        'Group A': ["Men's Clothing", "Women's Clothing"],
-        'Group B': ["Men's Clothing", "Jewellery"],
-        'Group C': ["Jewellery", "Electronics"],
+        'Group A': ["men's clothing", "women's clothing"],
+        'Group B': ["men's clothing", "jewelery"],
+        'Group C': ["jewelery", "electronics"],
     }
 
     #Premium group
     premium_group, created = Group.objects.get_or_create(name='Premium')
 
     mobile_phones_permission, _ = Permission.objects.get_or_create(
-        codename="access_mobile_phones",
-        name="Can access Mobile Phones",
+        codename="access_mobile_phone",
+        name="Can access Mobile Phone",
         content_type=ContentType.objects.get_for_model(Category),
     )
     premium_group.permissions.add(mobile_phones_permission)

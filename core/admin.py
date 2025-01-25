@@ -13,7 +13,7 @@ def make_premium(modeladmin, request, queryset):
         user.groups.add(premium_group)
         # Add the "Mobile Phones" permission
         mobile_phones_permission, _ = Permission.objects.get_or_create(
-            codename="access_mobile_phones",
+            codename="access_mobile_phone",
             name="Can access Mobile Phones",
             content_type=ContentType.objects.get_for_model(Category),
         )
@@ -37,36 +37,35 @@ class CustomUserAdmin(UserAdmin):
         # Get the Premium group
         premium_group, _ = Group.objects.get_or_create(name='Premium')
 
-        # Get the user's current groups from the form data
+        # Get the user's current groups
         selected_groups = form.cleaned_data.get('groups', obj.groups.all())
         is_premium_selected = premium_group in selected_groups
 
         # Ensure the user belongs to at least one non-premium group if Premium is selected
         normal_groups = [group for group in selected_groups if group.name != 'Premium']
         if is_premium_selected and not normal_groups:
-            raise ValidationError(
-                "A user cannot be added to the Premium group without belonging to at least one other group."
-            )
+            raise ValidationError("A user cannot be added to the Premium group without belonging to at least one other group.")
 
         # Handle permissions based on group membership
         if premium_group in obj.groups.all():
             # Add the Mobile Phones permission
             mobile_phones_permission, _ = Permission.objects.get_or_create(
-                codename="access_mobile_phones",
+                codename="",
                 name="Can access Mobile Phones",
                 content_type=ContentType.objects.get_for_model(Category),
             )
             obj.user_permissions.add(mobile_phones_permission)
         else:
             # Remove the Mobile Phones permission if Premium is removed
-            mobile_phones_permission = Permission.objects.filter(codename="access_mobile_phones").first()
+            mobile_phones_permission = Permission.objects.filter(codename="access_mobile_phone").first()
             if mobile_phones_permission:
                 obj.user_permissions.remove(mobile_phones_permission)
 
         # Remove Premium group if the user is not in any other group
-        if not obj.groups.exclude(name='Premium').exists() and premium_group in obj.groups.all():
+        if obj.groups.exclude(name='Premium').exists() and premium_group in obj.groups.all():
             obj.groups.remove(premium_group)
 
+        print(obj.user_permissions)
         obj.save()
 
 # Unregister the default UserAdmin and register the custom one

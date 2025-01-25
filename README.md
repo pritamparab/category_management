@@ -7,18 +7,16 @@ git clone https://github.com/pritamparab/category_management.git
 cd category_management
 
 # Install Python Packages
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py populate_categories
-python scripts/populate_data.py
-python scripts/setup_groups.py
-python manage.py makemigrations
-python manage.py migrate
+1. pip install -r requirements.txt
+2. python manage.py migrate
+3. python manage.py populate_categories
+4. python scripts/populate_data.py
+5. python scripts/setup_groups.py
 
 # Run Backend Server
 python manage.py runserver
 
 # Run Frontend 
-cd frontend
-npm install
-npm run dev
+1. cd frontend
+2. npm install
+3. npm run dev
