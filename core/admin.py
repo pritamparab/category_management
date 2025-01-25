@@ -31,6 +31,9 @@ class CustomUserAdmin(UserAdmin):
     premium_status.short_description = 'Premium Member'
 
     def save_model(self, request, obj, form, change):
+        # Save the user first to ensure the ID is assigned
+        super().save_model(request, obj, form, change)
+
         # Get the Premium group
         premium_group, _ = Group.objects.get_or_create(name='Premium')
 
@@ -44,9 +47,6 @@ class CustomUserAdmin(UserAdmin):
             raise ValidationError(
                 "A user cannot be added to the Premium group without belonging to at least one other group."
             )
-
-        # Call the parent class's save_model to save the user first
-        super().save_model(request, obj, form, change)
 
         # Handle permissions based on group membership
         if premium_group in obj.groups.all():

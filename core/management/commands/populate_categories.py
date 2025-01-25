@@ -6,11 +6,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         categories = [
-            "Men's Clothing",
-            "Women's Clothing",
-            "Jewellery",
-            "Electronics",
-            "Mobile Phones",
+            "men's Clothing",
+            "women's Clothing",
+            "jewellery",
+            "electronics",
+            "mobile Phone",
         ]
         for name in categories:
             Category.objects.get_or_create(name=name)
